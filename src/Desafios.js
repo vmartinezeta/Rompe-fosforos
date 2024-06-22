@@ -10,8 +10,8 @@ Desafios.prototype.create = function () {
     this.crearTituloPrincipal(this.gameOptions.ANCHO * .5, 50, "DESAFIOS")
     const NUMERO_MAX = 5
     for (let i = 0; i < NUMERO_MAX; i++) {        
-        this.crearButton(110 + i * 200, 100, "boton-replay", this.iniciarJuego, this)
-        this.crearTituloPrincipal(110 + i * 200, 100, i + 1)
+        this.crearButton(110 + i * 200, 150, "boton-replay", this.iniciarJuego, this)
+        this.crearTituloPrincipal(110 + i * 200, 150, i + 1)
     }
 }
 

@@ -4,11 +4,11 @@ export function MainMenu(gameOptions) {
 
 MainMenu.prototype.create = function () {
     this.add.sprite(0, 0, 'mainMenu')
-    this.botonPlay = this.add.button(this.gameOptions.ANCHO * 0.5 - 55, 365, 'button-play', this.iniciarJuego, this)
+    this.botonPlay = this.add.button(this.gameOptions.ANCHO * 0.5 - 55, 226, 'button-play', this.iniciarJuego, this)
     this.botonPlay.anchor.set(0.5)
     this.botonPlay.input.useHandCursor = true
 
-    this.botonAyuda = this.add.button(this.gameOptions.ANCHO * 0.5 + 55, 365, 'boton-ayuda', this.howTo, this)
+    this.botonAyuda = this.add.button(this.gameOptions.ANCHO * 0.5 + 55, 226, 'boton-ayuda', this.howTo, this)
     this.botonAyuda.anchor.set(0.5)
     this.botonAyuda.input.useHandCursor = true
 
