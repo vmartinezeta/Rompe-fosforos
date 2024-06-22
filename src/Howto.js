@@ -5,5 +5,5 @@ Howto.prototype.create = function () {
 }
 
 Howto.prototype.startGame = function () {
-    this.game.state.start('Game')
+    this.game.state.start('Desafios')
 }

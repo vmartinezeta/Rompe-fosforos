@@ -27,5 +27,5 @@ MainMenu.prototype.howTo = function () {
 }
 
 MainMenu.prototype.iniciarJuego = function () {
-    this.game.state.start('Game')
+    this.game.state.start('Desafios')
 }

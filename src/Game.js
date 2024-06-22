@@ -1,58 +1,39 @@
 /*Autor: Ing. Víctor Martínez*/
 
-import { Nivel1} from "./Niveles.js"
 
 export function Game(gameOptions) {
     this.gameOptions = gameOptions
-    this.niveles = []
-    this.nivelActual = null
-    this.nivelAprobado = 0
     this.finalizacion = false
-    this.rotuloNivel = null
+    this.nivelActual =null
 }
 
 Game.prototype.create = function () {    
     this.game.stage.backgroundColor = 0xffffff
+    this.nivelActual = this.gameOptions.newNivelInstance(this.game)
 
-    this.niveles = [
-        Nivel1
-    ]
+    this.crearTituloPrincipal(286, 40, `Nivel ${this.gameOptions.getNivel()} / ${this.gameOptions.getTotalNiveles()}`)
+}
 
-    this.nivelActual = new this.niveles[this.nivelAprobado](this.game, this.gameOptions)
-
-    this.rotuloNivel = this.game.add.text(200, 25, `${this.nivelAprobado+1} / ${this.niveles.length}`)
-    this.rotuloNivel.font = "Arial Black"
-    this.rotuloNivel.fontSize = 28
-    this.rotuloNivel.fill = "#000"
-    this.rotuloNivel.setShadow(0, 1.5, "rgba(0,0,0,0.9)", 2)
+Game.prototype.crearTituloPrincipal = function (x, y, texto) {
+    const titulo = this.game.add.text(x, y, texto)
+    titulo.font = "Arial Black"
+    titulo.fontSize = 28
+    titulo.fill = "#000"
+    titulo.anchor.set(50 / 100)
+    titulo.setShadow(0, 1.5, "rgba(0,0,0,0.9)", 2)
 }
 
 Game.prototype.update = function () {
     if (!this.finalizacion) {
-        if (this.nivelActual.aproboNivel()) {
+        if (this.nivelActual.isAtEnd()) {
             this.finalizacion = true
-            this.nivelAprobado ++
-            if (this.nivelAprobado === this.niveles.length) {
-                this.time.events.add(5e3, this.finalizar, this)
-            } else {
-                this.time.events.add(5e3, this.cargarSiguienteNivel, this)
-            }            
+            this.time.events.add(2e3, this.finalizar, this)
         }
     }
 }
 
 Game.prototype.finalizar = function () {
-    this.niveles = []
     this.nivelActual = null
-    this.nivelAprobado = 0
     this.finalizacion = false
-    this.rotuloNivel.destroy()
-    this.game.state.start('MainMenu')
-}
-
-Game.prototype.cargarSiguienteNivel = function () {
-    this.finalizacion = false
-    this.nivelActual.destruir()
-    this.nivelActual = new this.niveles[this.nivelAprobado](this.game, this.gameOptions)
-    this.rotuloNivel.setText(`${this.nivelAprobado+1} / ${this.niveles.length}`)
+    this.game.state.start('Desafios')
 }

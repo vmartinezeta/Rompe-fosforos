@@ -36,6 +36,7 @@ Preloader.prototype.preload = function () {
     this.load.image('mensajeFinal', 'images/mensajeFinal.png')
     this.load.image('button-play', 'images/button-play.png')
     this.load.image('boton-ayuda', 'images/boton-ayuda.png')
+    this.load.image('boton-replay', 'images/boton-replay.png')
 
     this.load.audio('sonido-fondo', ['audio/stranger-things.mp3'])
     this.load.audio('nivel-aprobado', ['audio/nivel-aprobado.mp3'])

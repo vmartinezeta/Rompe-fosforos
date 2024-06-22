@@ -103,3 +103,7 @@ SignoOperacion.prototype.getSigno = function () {
         return this.signo
     }
 }
+
+SignoOperacion.prototype.isTransformado = function() {
+    return this.signo !== this.getSigno()
+}

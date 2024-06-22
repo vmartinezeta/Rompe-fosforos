@@ -1,5 +1,6 @@
 import { Poligono } from "./Poligono.js"
 import { Punto } from "./Punto.js"
+import { Requerimiento } from "./Requerimiento.js"
 import { SignoIgual } from "./Signo.js"
 import { SignoOperacion } from "./SuperSigno.js"
 import { Termino } from "./Termino.js"
@@ -12,6 +13,8 @@ function Nivel(game, gameOptions) {
     Phaser.Group.call(this, game)
     this.game = game
     this.gameOptions = gameOptions
+    this.reqActual = null
+    this.reqEnJuego = null
     this.cartelCuentaRegresiva = null
     this.finalizoCuentaRegresiva = true
     this.cartelAprobacion = null
@@ -25,7 +28,6 @@ function Nivel(game, gameOptions) {
     this.nivelAprobado = false
     this.signoIgual = null
     this.rotuloDesafio = null
-    this.requerimiento = null
     this.finalizacion = false
     this.cantidadFosforos = 0
     this.finCuentaRegresiva = false
@@ -34,6 +36,7 @@ function Nivel(game, gameOptions) {
     this.tiempoInicio = null
     this.rotuloTemporizador = null
     this.estadoActual = []
+    this.render = false
 }
 
 Nivel.prototype = Object.create(Phaser.Group.prototype)
@@ -52,6 +55,10 @@ Nivel.prototype.destruir = function () {
     this.cartelAprobacion.destroy()
 }
 
+Nivel.prototype.isAtEnd = function () {
+    return this.finalizacion
+}
+
 Nivel.prototype.aproboNivel = function () {
     return this.nivelAprobado
 }
@@ -64,15 +71,18 @@ Nivel.prototype.formatear = function (date) {
     return `${this.incluirDecena(date.getUTCHours())}:${this.incluirDecena(date.getUTCMinutes())}:${this.incluirDecena(date.getUTCSeconds())}`
 }
 
-Nivel.prototype.update = function () {
+Nivel.prototype.updateTemporizador = function () {
+    const hoy = new Date()
+    hoy.setTime(hoy - this.tiempoInicio)
+    this.rotuloTemporizador.setText(this.formatear(hoy))
+}
 
+Nivel.prototype.update = function () {
     this.tiempo += this.game.time.elapsed
     if (this.tiempo > this.FPMS) {
         this.tiempo = 0
         if (!this.finalizacion && (this.finCuentaRegresiva || !(this instanceof Nivel1))) {
-            const hoy = new Date()
-            hoy.setTime(hoy - this.tiempoInicio)
-            this.rotuloTemporizador.setText(this.formatear(hoy))
+            this.updateTemporizador()
         }
     }
 
@@ -92,35 +102,36 @@ Nivel.prototype.update = function () {
         }
     }
 
+    if (!this.reqEnJuego) {
+        this.reqEnJuego = this.reqActual.newInstance().reset()
+        this.estadoActual = this.terminos.map(t => t.newInstance())
+    }
+
 
     if (!this.finalizacion && this.finCuentaRegresiva) {
 
-        if (this.isRenderable()) {            
+        if (this.isRenderable()) {
+            this.estadoActual = this.terminos.map(t => t.newInstance())
             this.verificarSolucion()
-            this.termino1.destruir()
-            this.termino1 = new TerminoDecimal(this.game, this.transmision, null, this.transmision.agregarFosforo, this.terminos[0], new Punto(50, 200))
-        
-            this.termino2.destruir()
-            this.termino2 = new TerminoDecimal(this.game, this.transmision, null, this.transmision.agregarFosforo, this.terminos[1], new Punto(350, 200))
-        
-            this.termino3.destruir()
-            this.termino3 = new TerminoDecimal(this.game, this.transmision, null, this.transmision.agregarFosforo, this.terminos[2], new Punto(730, 200))
+            this.loadExpresion()
+            this.reqEnJuego.cantidad++
+            if (this.reqActual.completado(this.reqEnJuego)) {
+                this.finalizacion = true
+                this.desabilitarExpresion()
+            }
         }
+
 
         if (this.nivelAprobado) {
             this.finalizacion = true
             this.cartelAprobacion = this.game.add.sprite(0.5 * this.gameOptions.ANCHO, 500, 'aprobado')
             this.cartelAprobacion.anchor.set(0.5)
 
-            this.termino1.deshabilitarTodos()
-            this.termino2.deshabilitarTodos()
-            this.termino3.deshabilitarTodos()
-
+            this.desabilitarExpresion()
             this.signoOperacion.desabilitar()
         }
     }
 }
-
 
 Nivel.prototype.verificarSolucion = function () {
     const signo = this.signoOperacion.getSigno()
@@ -141,7 +152,7 @@ Nivel.prototype.verificarSolucion = function () {
     }
 }
 
-Nivel.prototype.actualizarCuentaRegresiva = function () {
+Nivel.prototype.updateCuentaRegresiva = function () {
     const nombre = this.cuentaRegresiva.pop()
     if (this.cartelCuentaRegresiva) {
         this.cartelCuentaRegresiva.destroy()
@@ -153,7 +164,7 @@ Nivel.prototype.actualizarCuentaRegresiva = function () {
     this.cartelCuentaRegresiva = this.game.add.sprite(0, 0.5 * this.gameOptions.ALTURA, nombre)
     this.cartelCuentaRegresiva.x = 0.5 * (this.gameOptions.ANCHO - this.cartelCuentaRegresiva.width)
     this.cartelCuentaRegresiva.anchor.set(0, 0.5)
-    this.game.time.events.add(1e3, this.actualizarCuentaRegresiva, this)
+    this.game.time.events.add(1e3, this.updateCuentaRegresiva, this)
 }
 
 Nivel.prototype.isRenderable = function () {
@@ -163,6 +174,26 @@ Nivel.prototype.isRenderable = function () {
         }
     }
     return false
+}
+
+Nivel.prototype.loadExpresion = function () {
+    this.termino1.destruir()
+    this.termino1 = new TerminoDecimal(this.game, this.transmision, null, this.transmision.agregarFosforo, this.terminos[0], new Punto(50, 200))
+    this.termino1.habilitarTodo()
+
+    this.termino2.destruir()
+    this.termino2 = new TerminoDecimal(this.game, this.transmision, null, this.transmision.agregarFosforo, this.terminos[1], new Punto(350, 200))
+    this.termino2.habilitarTodo()
+
+    this.termino3.destruir()
+    this.termino3 = new TerminoDecimal(this.game, this.transmision, null, this.transmision.agregarFosforo, this.terminos[2], new Punto(730, 200))
+    this.termino3.habilitarTodo()
+}
+
+Nivel.prototype.desabilitarExpresion = function() {
+    this.termino1.deshabilitarTodos()
+    this.termino2.deshabilitarTodos()
+    this.termino3.deshabilitarTodos()
 }
 
 
@@ -179,7 +210,9 @@ export function Nivel1(game, gameOptions) {
         '3-seg'
     ]
 
-    this.actualizarCuentaRegresiva()
+    this.reqActual = new Requerimiento("Eliminar", 1)
+
+    this.updateCuentaRegresiva()
 
 
     this.terminos.push(new Termino([
@@ -195,7 +228,6 @@ export function Nivel1(game, gameOptions) {
         new Poligono(true, true, false, true, true, false, false)
     ]))
 
-    this.estadoActual = this.terminos.map(t => t.newInstance())
 
     this.rotuloTemporizador = this.game.add.text(50, 25, `00:00:00`)
     this.rotuloTemporizador.font = "Arial Black"
@@ -233,7 +265,7 @@ Nivel1.prototype.constructor = Nivel1
 export function Nivel2(game) {
     Nivel.call(this, game)
 
-    this.requerimiento = new Requerimiento('Agregar', 2)
+    this.reqActual = new Requerimiento("Agregar", 2)
 
     this.terminos.push(new Termino([
         new Poligono(true, true, true, true, true, true, false)
@@ -247,7 +279,6 @@ export function Nivel2(game) {
         new Poligono(true, true, true, false, true, true, false)
     ]))
 
-    this.estadoActual = this.terminos.map(t => t.newInstance())
 
     this.tiempoInicio = new Date()
     this.rotuloTemporizador = this.game.add.text(50, 25, `00:00:00`)
@@ -294,7 +325,8 @@ Nivel2.prototype.constructor = Nivel2
 export function Nivel3(game) {
     Nivel.call(this, game)
 
-    this.requerimiento = new Requerimiento('Eliminar', 2)
+
+    this.reqActual = new Requerimiento("Mover", 3)
 
     this.terminos.push(new Termino([
         new Poligono(false, false, false, true, true, false, false)
@@ -308,7 +340,6 @@ export function Nivel3(game) {
         new Poligono(true, true, true, true, true, true, true)
     ]))
 
-    this.estadoActual = this.terminos.map(t => t.newInstance())
 
     this.tiempoInicio = new Date()
     this.rotuloTemporizador = this.game.add.text(50, 25, `00:00:00`)

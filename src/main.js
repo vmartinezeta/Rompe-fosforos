@@ -1,4 +1,5 @@
 import { Boot } from "./Boot.js"
+import { Desafios } from "./Desafios.js"
 import { Game } from "./Game.js"
 import { GameOptions } from "./GameOptions.js"
 import { Howto } from "./Howto.js"
@@ -39,6 +40,8 @@ const gameOptions = new GameOptions()
 const preloader = new Preloader(gameOptions)
 const mainMenu =  new MainMenu(gameOptions)
 const game = new Game(gameOptions)
+const desafios = new Desafios(gameOptions)
+
 
 const phaser = new Phaser.Game(gameOptions.ANCHO, gameOptions.ALTURA, Phaser.CANVAS, 'game')
 phaser.state.add('Boot', Boot)
@@ -46,4 +49,5 @@ phaser.state.add('Preloader', preloader)
 phaser.state.add('MainMenu', mainMenu)
 phaser.state.add('Howto', Howto)
 phaser.state.add('Game', game)
+phaser.state.add("Desafios", desafios)
 phaser.state.start('Boot')
