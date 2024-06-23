@@ -1,24 +1,31 @@
 import { Digito } from "./Digito.js"
 
-export function TerminoDecimal(game, transmision, cbColocarFosforo, cbDevolverFosforo, termino, coordenada) {
+export function TerminoDecimal(game, context, cbColocarFosforo, cbDevolverFosforo, termino, origen) {
     Phaser.Group.call(this, game)
+    this.game = game
+    this.context = context
+    this.cbColocarFosforo = cbColocarFosforo
+    this.cbDevolverFosforo = cbDevolverFosforo
+    this.origen = origen
+    this.termino = termino
+    this.actual = termino.newInstance()
     this.digitos = []
-    this.PIXELES_SEPARACION = 130
-    const origen = coordenada.newInstance()
-    this.poligonos = termino.getPoligonos()
-    for (let poligono of this.poligonos) {
-        const digito = new Digito(game, transmision, cbColocarFosforo, cbDevolverFosforo, origen, poligono)
-        origen.setX(origen.getX() + this.PIXELES_SEPARACION)
-        this.digitos.push(digito)
-    }
+
+    this.pintar()
 }
 
 TerminoDecimal.prototype = Object.create(Phaser.Group.prototype)
 TerminoDecimal.prototype.constructor = TerminoDecimal
 
-TerminoDecimal.prototype.destruir = function () {
-    for (let digito of this.digitos) {
-        digito.destroy()
+TerminoDecimal.prototype.pintar = function () {
+    this.digitos = []
+    const PIXELES_SEPARACION = 130
+    const origen = this.origen.newInstance()
+    for (let poligono of this.termino.getPoligonos()) {
+        const digito = new Digito(this.game, this.context, this.cbColocarFosforo, this.cbDevolverFosforo, origen, poligono)
+        origen.setX(origen.getX() + PIXELES_SEPARACION)
+        this.digitos.push(digito)
+        this.add(digito)
     }
 }
 
@@ -32,27 +39,28 @@ TerminoDecimal.prototype.getOrigen = function () {
     return origen
 }
 
-TerminoDecimal.prototype.deshabilitarTodos = function () {
-    for (let c of this.digitos) {
-        c.deshabilitarTodos()
+TerminoDecimal.prototype.habilitarOff = function () {
+    for (const d of this.digitos) {
+        d.habilitarOff()
     }
 }
 
-TerminoDecimal.prototype.habilitar = function (cifra, poligono) {
-    const d = this.digitos[cifra]
-    d.habilitar(poligono)
-}
-
-TerminoDecimal.prototype.habilitarTodo = function () {
-    for(let i=0;i<this.poligonos.length;i++) {
-        const p = this.poligonos[i]
-        this.habilitar(i, p)
+TerminoDecimal.prototype.habilitarOn = function () {
+    for (const d of this.digitos) {
+        d.habilitarOn()
     }
 }
 
-TerminoDecimal.prototype.habilitarPoligonos = function (poligonos) {
-    for(let i=0;i<poligonos.length;i++) {
-        const p = poligonos[i]
-        this.habilitar(i, p)
+TerminoDecimal.prototype.update = function () {
+    if (this.actual.toString() !== this.termino.toString()) {
+        this.actual = this.termino.newInstance()
+        this.removeAll()
+        this.pintar()
+    }
+}
+
+TerminoDecimal.prototype.deshabilitarTodo = function () {
+    for(const d of this.digitos) {
+        d.deshabilitarTodo()
     }
 }

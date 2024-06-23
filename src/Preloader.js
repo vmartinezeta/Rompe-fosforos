@@ -21,7 +21,7 @@ Preloader.prototype.preload = function () {
     this.physics.enable(cargando, Phaser.Physics.ARCADE)
     cargando.anchor.set(0.5)
 
-    this.load.image('aprobado', 'images/aprobado.png')
+    this.load.image('aprobado', 'images/listo.png')
     this.load.image('fosforo-vertical', 'images/fosforo-vertical.png')
     this.load.image('fosforo-inactivo-vertical', 'images/fosforo-inactivo-vertical.png')
     this.load.image('fosforo-horizontal', 'images/fosforo-horizontal.png')

@@ -1,10 +1,9 @@
 import { OperacionMatematica } from "./main.js"
 
-export function SignoOperacion(game, transmision, signo, origen) {
+export function SignoOperacion(game, signo, origen) {
     Phaser.Group.call(this, game)
     this.signo = signo
     this.origen = origen.newInstance()
-    this.transmision = transmision
     this.segmentoMovible = null
     this.movioSegmentoMovible = false
     this.ESCALA = 0.80
@@ -58,15 +57,10 @@ SignoOperacion.prototype.desabilitar = function () {
 }
 
 SignoOperacion.prototype.devolverFosforo = function () {
-    if (this.transmision === null) return
-    this.transmision.agregarFosforo()
     this.movioSegmentoMovible = true
 }
 
 SignoOperacion.prototype.colocarFosforo = function () {
-    if (this.transmision === null) return
-    const fosforo = this.transmision.getAt(this.transmision.countLiving()-1)
-    this.transmision.quitarFosforo(fosforo)
     this.movioSegmentoMovible = true
 }
 

@@ -1,5 +1,5 @@
 export function Termino(poligonos, base) {
-    this.base = base || 10
+    this.base = base ?? 10
     this.poligonos = poligonos
 }
 

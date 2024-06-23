@@ -6,7 +6,7 @@ import { SignoOperacion } from "./SuperSigno.js"
 import { Termino } from "./Termino.js"
 import { TerminoDecimal } from "./TerminoDecimal.js"
 import { TransmisionFosforos } from "./Transmision.js"
-import { OperacionMatematica } from "./main.js"
+import { Accion, OperacionMatematica } from "./main.js"
 
 /* Autor: Ing. Víctor Martínez */
 function Nivel(game, gameOptions) {
@@ -37,6 +37,11 @@ function Nivel(game, gameOptions) {
     this.rotuloTemporizador = null
     this.estadoActual = []
     this.render = false
+    this.cuentaRegresiva = [
+        '1-seg',
+        '2-seg',
+        '3-seg'
+    ]
 }
 
 Nivel.prototype = Object.create(Phaser.Group.prototype)
@@ -88,16 +93,8 @@ Nivel.prototype.update = function () {
 
 
     if (!this.finCuentaRegresiva) {
-        this.finCuentaRegresiva = this instanceof Nivel1 && this.finalizoCuentaRegresiva
-        if (this.finCuentaRegresiva) {
-            this.termino1.habilitarTodo()
-            this.termino2.habilitarTodo()
-            this.termino3.habilitarTodo()
-
-            const origen = this.signoOperacion.getOrigen()
-            this.signoOperacion.destroy()
-            this.signoOperacion = new SignoOperacion(this.game, this.transmision, OperacionMatematica.MAS, origen)
-
+        if (this.finalizoCuentaRegresiva) {
+            this.finCuentaRegresiva = true
             this.tiempoInicio = new Date()
         }
     }
@@ -114,21 +111,24 @@ Nivel.prototype.update = function () {
             this.estadoActual = this.terminos.map(t => t.newInstance())
             this.verificarSolucion()
             this.loadExpresion()
-            this.reqEnJuego.cantidad++
+
+            if (this.reqEnJuego.isNoMover()) {
+                this.reqEnJuego.cantidad++
+            } 
             if (this.reqActual.completado(this.reqEnJuego)) {
                 this.finalizacion = true
-                this.desabilitarExpresion()
+                this.deshabilitarExpresion()
+                this.transmision = null
             }
         }
 
 
         if (this.nivelAprobado) {
             this.finalizacion = true
-            this.cartelAprobacion = this.game.add.sprite(0.5 * this.gameOptions.ANCHO, 500, 'aprobado')
+            this.cartelAprobacion = this.create(0.5 * this.gameOptions.ANCHO, 500, 'aprobado')
             this.cartelAprobacion.anchor.set(0.5)
 
-            this.desabilitarExpresion()
-            this.signoOperacion.desabilitar()
+            this.deshabilitarExpresion()            
         }
     }
 }
@@ -152,19 +152,24 @@ Nivel.prototype.verificarSolucion = function () {
     }
 }
 
+Nivel.prototype.startCuentaRegresiva = function () {
+    this.finCuentaRegresiva = false
+    this.updateCuentaRegresiva()
+}
+
 Nivel.prototype.updateCuentaRegresiva = function () {
     const nombre = this.cuentaRegresiva.pop()
     if (this.cartelCuentaRegresiva) {
-        this.cartelCuentaRegresiva.destroy()
+        this.cartelCuentaRegresiva.kill()
     }
     if (!nombre) {
         this.finalizoCuentaRegresiva = true
         return
     }
-    this.cartelCuentaRegresiva = this.game.add.sprite(0, 0.5 * this.gameOptions.ALTURA, nombre)
+    this.cartelCuentaRegresiva = this.create(0, 0.5 * this.gameOptions.ALTURA, nombre)
     this.cartelCuentaRegresiva.x = 0.5 * (this.gameOptions.ANCHO - this.cartelCuentaRegresiva.width)
     this.cartelCuentaRegresiva.anchor.set(0, 0.5)
-    this.game.time.events.add(1e3, this.updateCuentaRegresiva, this)
+    this.game.time.events.add(1e3, this.startCuentaRegresiva, this)
 }
 
 Nivel.prototype.isRenderable = function () {
@@ -177,43 +182,27 @@ Nivel.prototype.isRenderable = function () {
 }
 
 Nivel.prototype.loadExpresion = function () {
-    this.termino1.destruir()
-    this.termino1 = new TerminoDecimal(this.game, this.transmision, null, this.transmision.agregarFosforo, this.terminos[0], new Punto(50, 200))
-    this.termino1.habilitarTodo()
-
-    this.termino2.destruir()
-    this.termino2 = new TerminoDecimal(this.game, this.transmision, null, this.transmision.agregarFosforo, this.terminos[1], new Punto(350, 200))
-    this.termino2.habilitarTodo()
-
-    this.termino3.destruir()
-    this.termino3 = new TerminoDecimal(this.game, this.transmision, null, this.transmision.agregarFosforo, this.terminos[2], new Punto(730, 200))
-    this.termino3.habilitarTodo()
+    this.termino1.habilitarOn()
+    this.termino2.habilitarOn()
+    this.termino3.habilitarOn()
 }
 
-Nivel.prototype.desabilitarExpresion = function() {
-    this.termino1.deshabilitarTodos()
-    this.termino2.deshabilitarTodos()
-    this.termino3.deshabilitarTodos()
+Nivel.prototype.deshabilitarExpresion = function () {
+    this.termino1.deshabilitarTodo()
+    this.termino2.deshabilitarTodo()    
+    this.termino3.deshabilitarTodo()
 }
+
 
 
 
 
 export function Nivel1(game, gameOptions) {
     Nivel.call(this, game)
+    this.game = game
     this.gameOptions = gameOptions
-    this.finalizoCuentaRegresiva = false
-    this.cuentaRegresiva = [
-        'listo',
-        '1-seg',
-        '2-seg',
-        '3-seg'
-    ]
 
-    this.reqActual = new Requerimiento("Eliminar", 1)
-
-    this.updateCuentaRegresiva()
-
+    this.reqActual = new Requerimiento(Accion.QUITAR, 1)
 
     this.terminos.push(new Termino([
         new Poligono(true, true, true, true, true, true, false)
@@ -244,28 +233,37 @@ export function Nivel1(game, gameOptions) {
     this.rotuloDesafio.setShadow(0, 1.5, "rgba(0,0,0,0.9)", 3)
 
 
-    this.termino1 = new TerminoDecimal(game, this.transmision, null, this.transmision.agregarFosforo, this.terminos[0], new Punto(50, 200))
+    this.termino1 = new TerminoDecimal(game, this, null, this.devolverFosforo, this.terminos[0], new Punto(50, 200))
+    this.termino1.habilitarOn()
 
-    this.signoOperacion = new SignoOperacion(game, null, OperacionMatematica.MAS, new Punto(270, 300))
+    this.signoOperacion = new SignoOperacion(game, OperacionMatematica.MAS, new Punto(270, 300))
 
-    this.termino2 = new TerminoDecimal(game, this.transmision, null, this.transmision.agregarFosforo, this.terminos[1], new Punto(350, 200))
+    this.termino2 = new TerminoDecimal(game, this, null, this.devolverFosforo, this.terminos[1], new Punto(350, 200))
+    this.termino2.habilitarOn()
 
     this.signoIgual = new SignoIgual(game, new Punto(540, 270))
 
-    this.termino3 = new TerminoDecimal(game, this.transmision, null, this.transmision.agregarFosforo, this.terminos[2], new Punto(730, 200))
+    this.termino3 = new TerminoDecimal(game, this, null, this.devolverFosforo, this.terminos[2], new Punto(730, 200))
+    this.termino3.habilitarOn()
 }
 
 Nivel1.prototype = Object.create(Nivel.prototype)
 Nivel1.prototype.constructor = Nivel1
 
+Nivel1.prototype.devolverFosforo = function () {
+    if (!this.transmision)return
+    this.transmision.agregarFosforo()
+}
 
 
 
 
-export function Nivel2(game) {
+
+export function Nivel2(game, gameOptions) {
     Nivel.call(this, game)
+    this.gameOptions = gameOptions
 
-    this.reqActual = new Requerimiento("Agregar", 2)
+    this.reqActual = new Requerimiento(Accion.AGREGAR, 2)
 
     this.terminos.push(new Termino([
         new Poligono(true, true, true, true, true, true, false)
@@ -284,49 +282,52 @@ export function Nivel2(game) {
     this.rotuloTemporizador = this.game.add.text(50, 25, `00:00:00`)
     this.rotuloTemporizador.font = "Arial Black"
     this.rotuloTemporizador.fontSize = 24
-    this.rotuloTemporizador.fill = "#ffffff"
+    this.rotuloTemporizador.fill = "#000"
     this.rotuloTemporizador.setShadow(0, 1.5, "rgba(0,0,0,0.9)", 2)
 
     this.rotuloDesafio = this.game.add.text(0.5 * this.gameOptions.ANCHO, 75, "Agregar 2 fósforos para corregir la ecuación.")
     this.rotuloDesafio.anchor.set(.5)
     this.rotuloDesafio.font = "sans-serif"
     this.rotuloDesafio.fontSize = 32
-    this.rotuloDesafio.fill = "#ffffff"
+    this.rotuloDesafio.fill = "#000"
     this.rotuloDesafio.fontWeight = "italic"
     this.rotuloDesafio.setShadow(0, 1.5, "rgba(0,0,0,0.9)", 3)
 
     this.transmision.agregarFosforo()
     this.transmision.agregarFosforo()
 
-    const poligonos1 = this.findEspaciosDisponible(this.estadoActual[0].getPoligonos())
-    this.termino1 = new TerminoDecimal(game, this.transmision, this.transmision.quitarFosforo, null, this.terminos[0], new Punto(50, 200))
-    this.termino1.habilitarPoligonos(poligonos1)
 
-    this.signoOperacion = new SignoOperacion(game, this.transmision, OperacionMatematica.MENOS, new Punto(270, 300))
+    this.termino1 = new TerminoDecimal(game, this, this.colocarFosforo, null, this.terminos[0], new Punto(50, 200))
+    this.termino1.habilitarOff()
 
-    const poligonos2 = this.findEspaciosDisponible(this.estadoActual[1].getPoligonos())
-    this.termino2 = new TerminoDecimal(game, this.transmision, this.transmision.quitarFosforo, null, this.terminos[1], new Punto(450, 200))
-    this.termino2.habilitarPoligonos(poligonos2)
+    this.signoOperacion = new SignoOperacion(game, OperacionMatematica.MENOS, new Punto(270, 300))
+
+    this.termino2 = new TerminoDecimal(game, this, this.colocarFosforo, null, this.terminos[1], new Punto(450, 200))
+    this.termino2.habilitarOff()
 
     this.signoIgual = new SignoIgual(game, new Punto(650, 270))
 
-    const poligonos3 = this.findEspaciosDisponible(this.estadoActual[2].getPoligonos())
-    this.termino3 = new TerminoDecimal(game, this.transmision, this.transmision.quitarFosforo, null, this.terminos[2], new Punto(850, 200))
-    this.termino3.habilitarPoligonos(poligonos3)
+    this.termino3 = new TerminoDecimal(game, this, this.colocarFosforo, null, this.terminos[2], new Punto(850, 200))
+    this.termino3.habilitarOff()
 }
 
 Nivel2.prototype = Object.create(Nivel.prototype)
 Nivel2.prototype.constructor = Nivel2
 
 
+Nivel2.prototype.colocarFosforo = function () {
+    this.transmision.quitarFosforo()
+}
 
 
 
-export function Nivel3(game) {
+
+
+export function Nivel3(game, gameOptions) {
     Nivel.call(this, game)
+    this.gameOptions = gameOptions
 
-
-    this.reqActual = new Requerimiento("Mover", 3)
+    this.reqActual = new Requerimiento(Accion.QUITAR, 2)
 
     this.terminos.push(new Termino([
         new Poligono(false, false, false, true, true, false, false)
@@ -345,30 +346,35 @@ export function Nivel3(game) {
     this.rotuloTemporizador = this.game.add.text(50, 25, `00:00:00`)
     this.rotuloTemporizador.font = "Arial Black"
     this.rotuloTemporizador.fontSize = 24
-    this.rotuloTemporizador.fill = "#ffffff"
+    this.rotuloTemporizador.fill = "#000"
     this.rotuloTemporizador.setShadow(0, 1.5, "rgba(0,0,0,0.9)", 2)
 
     this.rotuloDesafio = this.game.add.text(0.5 * this.gameOptions.ANCHO, 75, "Elimina 2 fósforos para corregir la ecuación.")
     this.rotuloDesafio.anchor.set(.5)
     this.rotuloDesafio.font = "sans-serif"
     this.rotuloDesafio.fontSize = 32
-    this.rotuloDesafio.fill = "#ffffff"
+    this.rotuloDesafio.fill = "#000"
     this.rotuloDesafio.fontWeight = "italic"
     this.rotuloDesafio.setShadow(0, 1.5, "rgba(0,0,0,0.9)", 3)
 
-    this.termino1 = new TerminoDecimal(game, this.transmision, null, this.transmision.agregarFosforo, this.terminos[0], new Punto(50, 200))
-    this.termino1.habilitarTodo()
+    this.termino1 = new TerminoDecimal(game, this, null, this.devolverFosforo, this.terminos[0], new Punto(50, 200))
+    this.termino1.habilitarOn()
 
-    this.signoOperacion = new SignoOperacion(game, this.transmision, OperacionMatematica.MAS, new Punto(310, 300))
+    this.signoOperacion = new SignoOperacion(game, OperacionMatematica.MAS, new Punto(310, 300))
 
-    this.termino2 = new TerminoDecimal(game, this.transmision, null, this.transmision.agregarFosforo, this.terminos[1], new Punto(450, 200))
-    this.termino2.habilitarTodo()
+    this.termino2 = new TerminoDecimal(game, this, null, this.devolverFosforo, this.terminos[1], new Punto(450, 200))
+    this.termino2.habilitarOn()
 
     this.signoIgual = new SignoIgual(game, new Punto(650, 270))
 
-    this.termino3 = new TerminoDecimal(game, this.transmision, null, this.transmision.agregarFosforo, this.terminos[2], new Punto(850, 200))
-    this.termino3.habilitarTodo()
+    this.termino3 = new TerminoDecimal(game, this, null, this.devolverFosforo, this.terminos[2], new Punto(850, 200))
+    this.termino3.habilitarOn()
 }
 
 Nivel3.prototype = Object.create(Nivel.prototype)
 Nivel3.prototype.constructor = Nivel3
+
+
+Nivel3.prototype.devolverFosforo = function () {
+    this.transmision.agregarFosforo()
+ }

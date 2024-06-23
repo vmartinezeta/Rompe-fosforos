@@ -35,6 +35,13 @@ export const OperacionMatematica = {
 }
 
 
+export const Accion = {
+    MOVER:"MOVER",
+    AGREGAR:"AGREGAR",
+    QUITAR:"QUITAR"
+}
+
+
 
 const gameOptions = new GameOptions()
 const preloader = new Preloader(gameOptions)

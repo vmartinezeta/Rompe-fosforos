@@ -1,3 +1,5 @@
+import { Accion } from "./main.js"
+
 export function Requerimiento(nombre, cantidad) {
     this.nombre = nombre
     this.cantidad = cantidad
@@ -6,6 +8,10 @@ export function Requerimiento(nombre, cantidad) {
 Requerimiento.prototype = Object.create(Requerimiento.prototype)
 Requerimiento.prototype.constructor = Requerimiento
 
+
+Requerimiento.prototype.isNoMover = function() {
+    return this.nombre !== Accion.MOVER
+}
 
 Requerimiento.prototype.reset = function() {
     this.cantidad = 0

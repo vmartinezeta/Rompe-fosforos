@@ -12,6 +12,6 @@ TransmisionFosforos.prototype.agregarFosforo = function () {
     item.scale.set(.8)
 }
 
-TransmisionFosforos.prototype.quitarFosforo = function (fosforo) {
-    this.remove(fosforo)
+TransmisionFosforos.prototype.quitarFosforo = function () {
+    this.remove(this.getFirstAlive())
 }

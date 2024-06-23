@@ -33,7 +33,7 @@ Game.prototype.update = function () {
 }
 
 Game.prototype.finalizar = function () {
-    this.nivelActual = null
+    this.nivelActual.destroy()    
     this.finalizacion = false
     this.game.state.start('Desafios')
 }
