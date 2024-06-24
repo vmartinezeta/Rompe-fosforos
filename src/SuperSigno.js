@@ -1,17 +1,22 @@
-import { OperacionMatematica } from "./main.js"
+import { TypeSigno } from "./main.js"
 
-export function SignoOperacion(game, signo, origen) {
+export function SuperSigno(game, signo, origen, cbColocar, cbDevolver, context) {
     Phaser.Group.call(this, game)
     this.signo = signo
     this.origen = origen.newInstance()
+    this.cbColocar = cbColocar
+    this.cbDevolver = cbDevolver
+    this.context = context
     this.segmentoMovible = null
     this.movioSegmentoMovible = false
-    this.ESCALA = 0.80
+    this.ESCALA = 80/100
+
     switch (signo) {
-        case OperacionMatematica.MAS:
+        case TypeSigno.SUMAR:
             const segmentoEstatico = this.create(origen.getX(), origen.getY(), 'fosforo-horizontal')
             segmentoEstatico.anchor.set(.5)
             segmentoEstatico.scale.set(this.ESCALA)
+
             this.segmentoMovible = this.create(origen.getX(), origen.getY(), 'fosforo-vertical')
             this.segmentoMovible.anchor.set(.5)
             this.segmentoMovible.key = 1
@@ -19,14 +24,7 @@ export function SignoOperacion(game, signo, origen) {
             this.segmentoMovible.inputEnabled = true
             this.segmentoMovible.events.onInputUp.add(this.devolverFosforo, this)
             break
-        case OperacionMatematica.MENOS:
-            const menos = this.create(origen.getX(), origen.getY(), 'fosforo-horizontal')
-            menos.scale.set(this.ESCALA)
-            if (this.segmentoMovible !== null) {
-                menos.anchor.set(.5)
-            }
-            break
-        case OperacionMatematica.ASTERISCO:
+        case TypeSigno.MULTIPLICAR:
             const segmento1 = this.create(origen.getX(), origen.getY(), 'fosforo-vertical')
             segmento1.anchor.set(.5)
             segmento1.angle = -45
@@ -36,35 +34,36 @@ export function SignoOperacion(game, signo, origen) {
             segmento2.angle = 45
             segmento2.scale.set(this.ESCALA)
             break
-        case OperacionMatematica.PLECA:
-            const segmento = this.create(origen.getX(), origen.getY(), 'fosforo-vertical')
-            segmento.anchor.set(.5)
-            segmento.angle = 45
-            segmento.scale.set(this.ESCALA)
-            break
     }
 }
 
-SignoOperacion.prototype = Object.create(Phaser.Group.prototype)
-SignoOperacion.prototype.constructor = SignoOperacion
+SuperSigno.prototype = Object.create(Phaser.Group.prototype)
+SuperSigno.prototype.constructor = SuperSigno
 
-SignoOperacion.prototype.getOrigen = function () {
+
+SuperSigno.prototype.getOrigen = function () {
     return this.origen
 }
 
-SignoOperacion.prototype.desabilitar = function () {
+SuperSigno.prototype.desabilitar = function () {
     this.transmision = null
 }
 
-SignoOperacion.prototype.devolverFosforo = function () {
-    this.movioSegmentoMovible = true
+SuperSigno.prototype.devolverFosforo = function () {
+    if (this.cbDevolver) {
+        this.cbDevolver.call(this.context)
+        this.movioSegmentoMovible = true
+    }
 }
 
-SignoOperacion.prototype.colocarFosforo = function () {
-    this.movioSegmentoMovible = true
+SuperSigno.prototype.colocarFosforo = function () {
+    if (this.cbColocar) {
+        this.cbColocar.call(this.context)
+        this.movioSegmentoMovible = true
+    }
 }
 
-SignoOperacion.prototype.update = function () {
+SuperSigno.prototype.update = function () {
     if (this.movioSegmentoMovible) {
         this.movioSegmentoMovible = false
         if (Boolean(this.segmentoMovible.key)) {
@@ -87,17 +86,17 @@ SignoOperacion.prototype.update = function () {
     }
 }
 
-SignoOperacion.prototype.getSigno = function () {
-    const segmentoMovibleActivo = this.segmentoMovible !== null && Boolean(this.segmentoMovible.key)
-    if (this.signo === OperacionMatematica.MAS && segmentoMovibleActivo) {
-        return OperacionMatematica.MAS
-    } else if (this.signo === OperacionMatematica.MAS && !segmentoMovibleActivo) {
-        return OperacionMatematica.MENOS
+SuperSigno.prototype.getSigno = function () {
+    const segmentoMovibleActivo = this.segmentoMovible && Boolean(this.segmentoMovible.key)
+    if (this.signo === TypeSigno.SUMAR && segmentoMovibleActivo) {
+        return TypeSigno.SUMAR
+    } else if (this.signo === TypeSigno.SUMAR && !segmentoMovibleActivo) {
+        return TypeSigno.RESTAR
     } else {
         return this.signo
     }
 }
 
-SignoOperacion.prototype.isTransformado = function() {
+SuperSigno.prototype.isTransformado = function() {
     return this.signo !== this.getSigno()
 }

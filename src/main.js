@@ -27,11 +27,12 @@ export const Segmento = {
 }
 
 
-export const OperacionMatematica = {
-    MAS: 'SUMAR',
-    MENOS: 'RESTAR',
-    ASTERISCO: 'MULTIPLICAR',
-    PLECA: 'DIVIDIR'
+export const TypeSigno = {
+    SUMAR: 'SUMAR',
+    RESTAR: 'RESTAR',
+    MULTIPLICAR: 'MULTIPLICAR',
+    DIVIDIR: 'DIVIDIR',
+    IGUAL : "IGUAL"
 }
 
 
@@ -40,7 +41,6 @@ export const Accion = {
     AGREGAR:"AGREGAR",
     QUITAR:"QUITAR"
 }
-
 
 
 const gameOptions = new GameOptions()
