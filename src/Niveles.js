@@ -90,7 +90,6 @@ Nivel.prototype.update = function () {
         }
     }
 
-
     if (!this.finCuentaRegresiva) {
         if (this.finalizoCuentaRegresiva) {
             this.finCuentaRegresiva = true
@@ -103,9 +102,9 @@ Nivel.prototype.update = function () {
         this.estadoActual = this.terminos.map(t => t.newInstance())
     }
 
-
     if (!this.finalizacion && this.finCuentaRegresiva) {
 
+        
         if (this.isRenderable()) {
             this.estadoActual = this.terminos.map(t => t.newInstance())
             this.verificarSolucion()
@@ -113,7 +112,8 @@ Nivel.prototype.update = function () {
 
             if (this.reqEnJuego.isNoMover()) {
                 this.reqEnJuego.cantidad++
-            } 
+            }
+
             if (this.reqActual.completado(this.reqEnJuego)) {
                 this.finalizacion = true
                 this.deshabilitarExpresion()
@@ -126,8 +126,6 @@ Nivel.prototype.update = function () {
             this.finalizacion = true
             this.cartelAprobacion = this.create(0.5 * this.gameOptions.ANCHO, 500, 'aprobado')
             this.cartelAprobacion.anchor.set(0.5)
-
-            this.deshabilitarExpresion()            
         }
     }
 }
@@ -147,6 +145,7 @@ Nivel.prototype.verificarSolucion = function () {
             break
         case TypeSigno.DIVIDIR:
             this.nivelAprobado = primero.toNumber() / segundo.toNumber() === tercero.toNumber() && tercero.toNumber() !== Infinity
+            console.log(primero.toNumber(), segundo.toNumber(), tercero.toNumber())
             break
     }
 }
@@ -188,22 +187,26 @@ Nivel.prototype.loadExpresion = function () {
         this.termino1.habilitarOff()
         this.termino2.habilitarOff()
         this.termino3.habilitarOff()
-    }else if (this.reqActual.isQuitar()) {
+    } else if (this.reqActual.isQuitar()) {
         this.termino1.habilitarOn()
         this.termino2.habilitarOn()
         this.termino3.habilitarOn()
+    } else if (this.reqEnJuego.isMover()) {
+        this.termino1.habilitarTodo()
+        this.termino2.habilitarTodo()
+        this.termino3.habilitarTodo()
     }
 }
 
 Nivel.prototype.deshabilitarExpresion = function () {
     this.termino1.deshabilitarTodo()
-    this.termino2.deshabilitarTodo()    
+    this.termino2.deshabilitarTodo()
     this.termino3.deshabilitarTodo()
 }
 
 Nivel.prototype.updateMove = function () {
     if (this.reqEnJuego.isMover()) {
-        this.reqEnJuego.cantidad ++
+        this.reqEnJuego.cantidad++
     }
 }
 
@@ -250,7 +253,7 @@ export function Nivel1(game, gameOptions) {
 
     this.signoOperacion = new SuperSigno(game, TypeSigno.SUMAR, new Punto(270, 300))
 
-    this.termino2 = new Digito(game, this, this.colocarFosforo, null,  new Punto(350, 200), this.terminos[1])
+    this.termino2 = new Digito(game, this, this.colocarFosforo, null, new Punto(350, 200), this.terminos[1])
     this.termino2.habilitarOff()
 
     new Signo(game, TypeSigno.IGUAL, new Punto(540, 270))
@@ -263,7 +266,7 @@ Nivel1.prototype = Object.create(Nivel.prototype)
 Nivel1.prototype.constructor = Nivel1
 
 Nivel1.prototype.colocarFosforo = function () {
-    if (!this.transmision)return
+    if (!this.transmision) return
     this.transmision.agregarFosforo()
 }
 
@@ -317,7 +320,7 @@ export function Nivel2(game, gameOptions) {
     this.termino2 = new Digito(game, this, this.colocarFosforo, null, new Punto(450, 200), this.terminos[1])
     this.termino2.habilitarOff()
 
-    new Signo(game,TypeSigno.IGUAL, new Punto(650, 270))
+    new Signo(game, TypeSigno.IGUAL, new Punto(650, 270))
 
     this.termino3 = new Digito(game, this, this.colocarFosforo, null, new Punto(850, 200), this.terminos[2])
     this.termino3.habilitarOff()
@@ -377,7 +380,7 @@ export function Nivel3(game, gameOptions) {
     this.termino2 = new Digito(game, this, null, this.colocarFosforo, new Punto(450, 200), this.terminos[1])
     this.termino2.habilitarOn()
 
-    new Signo(game,TypeSigno.IGUAL, new Punto(650, 270))
+    new Signo(game, TypeSigno.IGUAL, new Punto(650, 270))
 
     this.termino3 = new Digito(game, this, null, this.colocarFosforo, new Punto(850, 200), this.terminos[2])
     this.termino3.habilitarOn()
@@ -390,7 +393,7 @@ Nivel3.prototype.colocarEnSigno = function () {
     this.transmision.quitarFosforo()
 }
 
-Nivel3.prototype.quitarDelSigno = function() {
+Nivel3.prototype.quitarDelSigno = function () {
     this.transmision.agregarFosforo()
 }
 
@@ -406,10 +409,75 @@ export function Nivel4(game, gameOptions) {
     Nivel.call(this, game)
     this.gameOptions = gameOptions
 
+    this.reqActual = new Requerimiento(Accion.MOVER, 2)
+
+    this.terminos.push(
+        new Poligono(true, true, true, false, true, true, false),
+    )
+
+    this.terminos.push(
+        new Poligono(true, true, true, false, true, true, false),
+    )
+
+    this.terminos.push(
+        new Poligono(true, true, true, true, true, true, false),
+    )
+
+
+    this.tiempoInicio = new Date()
+    this.rotuloTemporizador = this.game.add.text(50, 25, `00:00:00`)
+    this.rotuloTemporizador.font = "Arial Black"
+    this.rotuloTemporizador.fontSize = 24
+    this.rotuloTemporizador.fill = "#000"
+    this.rotuloTemporizador.setShadow(0, 1.5, "rgba(0,0,0,0.9)", 2)
+
+    this.rotuloDesafio = this.game.add.text(0.5 * this.gameOptions.ANCHO, 75, "Mover 2 fósforo para corregir la ecuación.")
+    this.rotuloDesafio.anchor.set(.5)
+    this.rotuloDesafio.font = "sans-serif"
+    this.rotuloDesafio.fontSize = 32
+    this.rotuloDesafio.fill = "#000"
+    this.rotuloDesafio.fontWeight = "italic"
+    this.rotuloDesafio.setShadow(0, 1.5, "rgba(0,0,0,0.9)", 3)
+
+    this.termino1 = new Digito(game, this, this.colocarFosforo, this.devolverFosforo, new Punto(50, 200), this.terminos[0])
+    this.termino1.habilitarOn()
+
+    this.signoOperacion = new Signo(game, TypeSigno.RESTAR, new Punto(310, 300))
+
+    this.termino2 = new Digito(game, this, this.colocarFosforo, this.devolverFosforo, new Punto(450, 200), this.terminos[1])
+    this.termino2.habilitarOn()
+
+    new Signo(game, TypeSigno.IGUAL, new Punto(650, 270))
+
+    this.termino3 = new Digito(game, this, this.colocarFosforo, this.devolverFosforo, new Punto(850, 200), this.terminos[2])
+    this.termino3.habilitarOn()
+}
+
+Nivel4.prototype = Object.create(Nivel.prototype)
+Nivel4.prototype.constructor = Nivel4
+
+Nivel4.prototype.colocarFosforo = function () {
+    this.updateMove()
+    this.transmision.quitarFosforo()
+}
+
+Nivel4.prototype.devolverFosforo = function () {
+    this.transmision.agregarFosforo()
+}
+
+
+
+
+
+
+export function Nivel5(game, gameOptions) {
+    Nivel.call(this, game)
+    this.gameOptions = gameOptions
+
     this.reqActual = new Requerimiento(Accion.MOVER, 1)
 
     this.terminos.push(
-        new Poligono(true, true, true, false, true, true, false)
+        new Poligono(true, true, true, false, true, true, false)        
     )
 
     this.terminos.push(
@@ -436,25 +504,28 @@ export function Nivel4(game, gameOptions) {
     this.rotuloDesafio.fontWeight = "italic"
     this.rotuloDesafio.setShadow(0, 1.5, "rgba(0,0,0,0.9)", 3)
 
-    this.termino1 = new Digito(game, this, this.colocarFosforo,this.devolverFosforo, new Punto(50, 200), this.terminos[0])
+    this.termino1 = new Digito(game, this, this.colocarFosforo, this.devolverFosforo, new Punto(50, 200), this.terminos[0])
     this.termino1.habilitarOn()
 
     this.signoOperacion = new Signo(game, TypeSigno.DIVIDIR, new Punto(310, 300))
 
-    this.termino2 = new Digito(game, this, this.colocarFosforo,this.devolverFosforo, new Punto(450, 200), this.terminos[1])
+    this.termino2 = new Digito(game, this, this.colocarFosforo, this.devolverFosforo, new Punto(450, 200), this.terminos[1])
     this.termino2.habilitarOn()
 
-    new Signo(game,TypeSigno.IGUAL, new Punto(650, 270))
+    new Signo(game, TypeSigno.IGUAL, new Punto(650, 270))
 
-    this.termino3 = new Digito(game, this, this.colocarFosforo,this.devolverFosforo, new Punto(850, 200), this.terminos[2])
+    this.termino3 = new Digito(game, this, this.colocarFosforo, this.devolverFosforo, new Punto(850, 200), this.terminos[2])
     this.termino3.habilitarOn()
 }
 
-Nivel4.prototype = Object.create(Nivel.prototype)
-Nivel4.prototype.constructor = Nivel4
+Nivel5.prototype = Object.create(Nivel.prototype)
+Nivel5.prototype.constructor = Nivel5
 
-Nivel4.prototype.colocarFosforo = function () {
+Nivel5.prototype.colocarFosforo = function () {
+    this.updateMove()
+    this.transmision.quitarFosforo()
 }
 
-Nivel4.prototype.devolverFosforo = function() {
+Nivel5.prototype.devolverFosforo = function () {
+    this.transmision.agregarFosforo()
 }

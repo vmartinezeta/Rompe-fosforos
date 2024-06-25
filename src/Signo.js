@@ -21,7 +21,6 @@ Signo.prototype.getSigno = function() {
     return this.signo
 }
 
-
 Signo.prototype.crearIgual = function() {
     const SEPARACION_EN_PX = 30
     const arriba = this.create(this.origen.getX(), this.origen.getY(), 'fosforo-horizontal')

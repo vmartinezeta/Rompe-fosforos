@@ -9,7 +9,6 @@ Requerimiento.prototype = Object.create(Requerimiento.prototype)
 Requerimiento.prototype.constructor = Requerimiento
 
 
-
 Requerimiento.prototype.isNoMover = function() {
     return this.nombre !== Accion.MOVER
 }

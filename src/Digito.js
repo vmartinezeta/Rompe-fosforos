@@ -88,6 +88,13 @@ Digito.prototype.habilitarOff = function () {
     }
 }
 
+Digito.prototype.habilitarTodo = function() {
+    for (const key of Segmento.toArray()) {
+        const lado = this.iterate('key', key, Phaser.Group.RETURN_CHILD)
+        lado.inputEnabled = true       
+    } 
+}
+
 Digito.prototype.colocarFosforo = function (segmento) {
     for (let key of Segmento.toArray()) {
         if (segmento.key === key) {

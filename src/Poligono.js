@@ -78,7 +78,7 @@ Poligono.prototype.toNumber = function () {
         new Poligono(false, true, true, true, true, true, true),
         new Poligono(false, false, false, true, true, false, false),
         new Poligono(true, false, true, true, false, true, true),
-        new Poligono(false, false, true, true, true, true, false),
+        new Poligono(true, false, true, true, true, true, false),
         new Poligono(true, true, false, true, true, false, false),
         new Poligono(true, true, true, false, true, true, false),
         new Poligono(true, true, true, false, true, true, true),

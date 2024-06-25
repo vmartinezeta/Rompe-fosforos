@@ -1,6 +1,6 @@
 /*Autor: Ing. Víctor Martínez*/
 
-import { Nivel1, Nivel2, Nivel3, Nivel4 } from "./Niveles.js"
+import { Nivel1, Nivel2, Nivel3, Nivel4, Nivel5 } from "./Niveles.js"
 
 
 export function GameOptions() {}
@@ -12,7 +12,8 @@ GameOptions.prototype.niveles = [
     Nivel1,
     Nivel2,
     Nivel3,
-    Nivel4
+    Nivel4,
+    Nivel5
 ]
 
 GameOptions.prototype = Object.create(GameOptions.prototype)
