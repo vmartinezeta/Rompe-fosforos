@@ -25,17 +25,14 @@ function Nivel(game, gameOptions) {
     this.termino3 = null
     this.signoOperacion = null
     this.nivelAprobado = false
-    this.signoIgual = null
     this.rotuloDesafio = null
     this.finalizacion = false
-    this.cantidadFosforos = 0
     this.finCuentaRegresiva = false
     this.FPMS = 100
     this.tiempo = 0
     this.tiempoInicio = null
     this.rotuloTemporizador = null
     this.estadoActual = []
-    this.render = false
     this.cuentaRegresiva = [
         '1-seg',
         '2-seg',
@@ -98,29 +95,24 @@ Nivel.prototype.update = function () {
     }
 
     if (!this.reqEnJuego) {
-        this.reqEnJuego = this.reqActual.newInstance().reset()
+        this.reqEnJuego = this.reqActual.newInstance()
         this.estadoActual = this.terminos.map(t => t.newInstance())
     }
 
     if (!this.finalizacion && this.finCuentaRegresiva) {
-
-        
-        if (this.isRenderable()) {
-            this.estadoActual = this.terminos.map(t => t.newInstance())
-            this.verificarSolucion()
-            this.loadExpresion()
-
+        if (this.isRender()) {
+            this.updateRender()
             if (this.reqEnJuego.isNoMover()) {
-                this.reqEnJuego.cantidad++
+                this.reqEnJuego.cantidad--
             }
 
-            if (this.reqActual.completado(this.reqEnJuego)) {
-                this.finalizacion = true
-                this.deshabilitarExpresion()
-                this.transmision = null
+            if (this.reqEnJuego.completado()) {
+                this.finalizar()
+            } else {
+                this.loadExpresion()
             }
         }
-
+        
 
         if (this.nivelAprobado) {
             this.finalizacion = true
@@ -128,6 +120,27 @@ Nivel.prototype.update = function () {
             this.cartelAprobacion.anchor.set(0.5)
         }
     }
+}
+
+Nivel.prototype.finalizar = function () {
+    this.verificarSolucion()
+    this.finalizacion = true
+    this.deshabilitarExpresion()
+    this.transmision.destroy()
+    if (this.signoOperacion instanceof SuperSigno) {
+        this.signoOperacion.desabilitar()
+    }
+}
+
+Nivel.prototype.isRender = function () {
+    return this.isUpdated() || (this.signoOperacion instanceof SuperSigno && this.signoOperacion.isTransformado())
+}
+
+Nivel.prototype.updateRender = function () {
+    this.estadoActual = this.terminos.map(t => t.newInstance())
+    if (this.signoOperacion instanceof SuperSigno) {
+        this.signoOperacion.updateRender()
+    }    
 }
 
 Nivel.prototype.verificarSolucion = function () {
@@ -170,7 +183,7 @@ Nivel.prototype.updateCuentaRegresiva = function () {
     this.game.time.events.add(1e3, this.startCuentaRegresiva, this)
 }
 
-Nivel.prototype.isRenderable = function () {
+Nivel.prototype.isUpdated = function () {
     for (let i = 0; i < this.terminos.length; i++) {
         if (this.terminos[i].toString() !== this.estadoActual[i].toString()) {
             return true
@@ -180,9 +193,6 @@ Nivel.prototype.isRenderable = function () {
 }
 
 Nivel.prototype.loadExpresion = function () {
-    this.termino1.update()
-    this.termino2.update()
-    this.termino3.update()
     if (this.reqActual.isAgregar()) {
         this.termino1.habilitarOff()
         this.termino2.habilitarOff()
@@ -206,9 +216,10 @@ Nivel.prototype.deshabilitarExpresion = function () {
 
 Nivel.prototype.updateMove = function () {
     if (this.reqEnJuego.isMover()) {
-        this.reqEnJuego.cantidad++
+        this.reqEnJuego.cantidad--
     }
 }
+
 
 
 
@@ -372,32 +383,29 @@ export function Nivel3(game, gameOptions) {
     this.rotuloDesafio.fontWeight = "italic"
     this.rotuloDesafio.setShadow(0, 1.5, "rgba(0,0,0,0.9)", 3)
 
-    this.termino1 = new Digito(game, this, null, this.colocarFosforo, new Punto(50, 200), this.terminos[0])
+    this.termino1 = new Digito(game, this, null, this.devolverFosforo, new Punto(50, 200), this.terminos[0])
     this.termino1.habilitarOn()
 
-    this.signoOperacion = new SuperSigno(game, TypeSigno.SUMAR, new Punto(310, 300), this.colocarEnSigno, this.quitarDelSigno, this)
+    this.signoOperacion = new SuperSigno(game, TypeSigno.SUMAR, new Punto(310, 300), null, this.quitarDelSigno, this)
 
-    this.termino2 = new Digito(game, this, null, this.colocarFosforo, new Punto(450, 200), this.terminos[1])
+    this.termino2 = new Digito(game, this, null, this.devolverFosforo, new Punto(450, 200), this.terminos[1])
     this.termino2.habilitarOn()
 
     new Signo(game, TypeSigno.IGUAL, new Punto(650, 270))
 
-    this.termino3 = new Digito(game, this, null, this.colocarFosforo, new Punto(850, 200), this.terminos[2])
+    this.termino3 = new Digito(game, this, null, this.devolverFosforo, new Punto(850, 200), this.terminos[2])
     this.termino3.habilitarOn()
 }
 
 Nivel3.prototype = Object.create(Nivel.prototype)
 Nivel3.prototype.constructor = Nivel3
 
-Nivel3.prototype.colocarEnSigno = function () {
-    this.transmision.quitarFosforo()
-}
 
 Nivel3.prototype.quitarDelSigno = function () {
     this.transmision.agregarFosforo()
 }
 
-Nivel3.prototype.colocarFosforo = function () {
+Nivel3.prototype.devolverFosforo = function () {
     this.transmision.agregarFosforo()
 }
 

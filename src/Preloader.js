@@ -38,8 +38,7 @@ Preloader.prototype.preload = function () {
     this.load.image('boton-ayuda', 'images/ong.png')
     this.load.image('boton-replay', 'images/caja.png')
 
-    this.load.audio('sonido-fondo', ['audio/stranger-things.mp3'])
-    this.load.audio('nivel-aprobado', ['audio/nivel-aprobado.mp3'])
+    this.load.audio('sonido-fondo', ['audio/stranger-things.mp3'])    
 }
 
 Preloader.prototype.cargandoArchivos = function (progress, cacheKey, success, totalLoaded, totalFiles) {

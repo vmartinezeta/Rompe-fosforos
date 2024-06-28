@@ -21,8 +21,19 @@ MainMenu.prototype.create = function () {
 
     emitter.gravity = 200;
     emitter.setAlpha(1, 0, 5000);
-    //emitter.setScale(0.9, 0, 0.9, 0, 3000);
     emitter.start(false, 1800, 50);
+
+
+
+    if (!this.gameOptions.musicaFondo) {
+        this.gameOptions.musicaFondo = this.add.audio('sonido-fondo')
+        this.sound.setDecodedCallback(this.gameOptions.musicaFondo, this.iniciarMusica, this)
+    }
+
+}
+
+MainMenu.prototype.iniciarMusica = function () {
+    this.gameOptions.musicaFondo.loopFull(this.gameOptions.volumen/100)
 }
 
 MainMenu.prototype.howTo = function () {

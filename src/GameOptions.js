@@ -7,6 +7,8 @@ export function GameOptions() {}
 
 GameOptions.prototype.ANCHO = 1024
 GameOptions.prototype.ALTURA = 580
+GameOptions.prototype.musicaFondo = null
+GameOptions.prototype.volumen = 50
 GameOptions.prototype.index = 0
 GameOptions.prototype.niveles = [
     Nivel1,

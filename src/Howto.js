@@ -1,5 +1,5 @@
 
-export function Howto() { }
+export function Howto() {}
 
 Howto.prototype.create = function () {
     this.add.button(0, 0, 'ayuda', this.startGame, this)
