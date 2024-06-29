@@ -11,13 +11,13 @@ export function TerminoDecimal(game, context, cbColocarFosforo, cbDevolverFosfor
     this.actual = termino.newInstance()
     this.digitos = []
 
-    this.pintar()
+    this.draw()
 }
 
 TerminoDecimal.prototype = Object.create(Phaser.Group.prototype)
 TerminoDecimal.prototype.constructor = TerminoDecimal
 
-TerminoDecimal.prototype.pintar = function () {
+TerminoDecimal.prototype.draw = function () {
     this.digitos = []
     const PIXELES_SEPARACION = 130
     const origen = this.origen.newInstance()
@@ -27,16 +27,6 @@ TerminoDecimal.prototype.pintar = function () {
         this.digitos.push(digito)
         this.add(digito)
     }
-}
-
-TerminoDecimal.prototype.getOrigen = function () {
-    let separacion = 0
-    for (let i=1;i<=this.digitos.length;i++) {
-        separacion += this.PIXELES_SEPARACION
-    }
-    const origen = this.digitos[0].getOrigen().newInstance()
-    origen.setX(origen.getX() - separacion)
-    return origen
 }
 
 TerminoDecimal.prototype.habilitarOff = function () {
@@ -51,11 +41,11 @@ TerminoDecimal.prototype.habilitarOn = function () {
     }
 }
 
-TerminoDecimal.prototype.update = function () {
+TerminoDecimal.prototype.updateRender = function () {
     if (this.actual.toString() !== this.termino.toString()) {
         this.actual = this.termino.newInstance()
         this.removeAll()
-        this.pintar()
+        this.draw()
     }
 }
 
