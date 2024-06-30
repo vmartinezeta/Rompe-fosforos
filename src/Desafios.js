@@ -1,3 +1,5 @@
+import { createButton } from "./Buttons.js"
+
 export function Desafios(gameOptions) {
     this.gameOptions = gameOptions
     this.botones = []
@@ -13,7 +15,9 @@ Desafios.prototype.crearCuadricula = function () {
     for (let i = 0; i < 4; i++) {
         for (let j = 0; j < 5; j++) {
             const opacity = this.gameOptions.existeNivel(5*i + j) ? 1: .5
-            this.crearButton(110 + j * 200, 120 + i * 120, "boton-replay", opacity, this.iniciarJuego, this)
+            const boton = createButton(this, 110 + j * 200, 120 + i * 120, "boton-replay", this.iniciarJuego)
+            boton.alpha =  opacity
+            this.botones.push(boton)       
             this.crearTituloPrincipal(130 + j * 200, 88 + i * 120, 5*i + j + 1)
         }
     }
@@ -25,14 +29,6 @@ Desafios.prototype.crearTituloPrincipal = function (x, y, texto) {
     titulo.fontSize = 28
     titulo.fill = "#000"
     titulo.anchor.set(50 / 100)
-}
-
-Desafios.prototype.crearButton = function (x, y, name, opacity, callback, context) {
-    const boton = this.add.button(x, y, name, callback, context)
-    boton.anchor.set(50 / 100)
-    boton.input.useHandCursor = true
-    boton.alpha = opacity
-    this.botones.push(boton)
 }
 
 Desafios.prototype.iniciarJuego = function (boton) {
