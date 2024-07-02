@@ -26,8 +26,7 @@ MainMenu.prototype.create = function () {
     }
 
 
-    new Animation(this, new Punto(550, 680))
-
+    new Animation(this, new Punto(510, 670))    
 }
 
 MainMenu.prototype.iniciarMusica = function () {

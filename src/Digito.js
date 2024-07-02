@@ -59,6 +59,17 @@ Digito.prototype.getEstadoSegmento = function (poligono, key) {
     throw new TypeError()
 }
 
+Digito.prototype.setForma = function (poligono) {
+    this.poligono = poligono
+}
+
+Digito.prototype.powerOff = function() {
+    for(let i=0;i<Segmento.toArray().length;i++) {
+        const key = Segmento.toArray()[i]
+        this.poligono[`set${key}`](false)
+    }
+}
+
 Digito.prototype.getOrigen = function () {
     return this.origen
 }
@@ -88,11 +99,22 @@ Digito.prototype.habilitarOff = function () {
     }
 }
 
+Digito.prototype.getOnAll = function () {
+    const segmentos = []
+    for (let key of Segmento.toArray()) {
+        if (this.poligono[`isOn${key}`]()) {
+            const lado = this.iterate('key', key, Phaser.Group.RETURN_CHILD)
+            segmentos.push(lado)
+        }
+    }
+    return segmentos
+}
+
 Digito.prototype.habilitarTodo = function() {
     for (const key of Segmento.toArray()) {
         const lado = this.iterate('key', key, Phaser.Group.RETURN_CHILD)
         lado.inputEnabled = true       
-    } 
+    }     
 }
 
 Digito.prototype.colocarFosforo = function (segmento) {
@@ -116,7 +138,7 @@ Digito.prototype.devolverFosforo = function (segmento) {
 }
 
 Digito.prototype.update = function () {
-    if (this.poligono.toString() !== this.actual.toString()) {
+    if (this.poligono.toString() !== this.actual.toString()) {                
         this.actual = this.poligono.newInstance()
         this.removeAll()
         this.draw()
